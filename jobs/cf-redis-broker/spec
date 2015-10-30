@@ -61,6 +61,9 @@ properties:
   redis.databases:
     default: 16
     description: Set the number of databases. The default database is DB 0.
+  broker.firewall_allow_rules:
+    default: []
+    description: IPs of hosts in each DC that need to be added to the container firewall rules to allow access to/from.
 
 ################################ SNAPSHOTTING  #################################
   redis.snapshotting.save:
