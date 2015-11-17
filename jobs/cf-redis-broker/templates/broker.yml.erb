@@ -15,7 +15,7 @@ redis:
     nodes: <%= p('redis.broker.dedicated_nodes') %>
     port: <%= p('redis.broker.dedicated_port') %>
     statefile_path: <%= p('redis.statefile_path') %>
-  firewall_allow_rules: <%= p('properties.broker.firewall_allow_rules') %>
+  firewall_allow_rules: <%= p('cf-redis-broker.broker.firewall_allow_rules') %>
 
 auth:
   username: <%= p('redis.broker.auth.username') %>
