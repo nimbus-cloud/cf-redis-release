@@ -5,6 +5,10 @@ set -e
 log_dir=/var/vcap/sys/log/cf-redis-broker
 
 disable_process_watcher() {
+    if [ ! -d ${log_dir} ]
+    then
+      mkdir -p ${log_dir} || exit 1
+    fi
     echo "`date +%c` - Disabling process watcher" >> ${log_dir}/drain.log 2>&1
 
     process_watcher_pidfile="/var/vcap/sys/run/cf-redis-broker/process-watcher.pid"
