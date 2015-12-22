@@ -22,6 +22,7 @@ start)
 
   # Copy the config file to right folder
   cp /var/vcap/jobs/cf-redis-broker/config/registrar_settings.yml /var/vcap/packages/route-registrar/registrar_settings.yml
+  chmod 777 /var/vcap/packages/route-registrar/registrar_settings.yml
 
   # registrar_settings.yml must be in pwd
   cd /var/vcap/packages/route-registrar
