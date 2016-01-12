@@ -193,10 +193,14 @@ properties:
     default: /var/vcap/store/tmp_backup
     description: "Temporary directory to use for backups. MUST be on same device (persistent disk) as redis data"
   redis.broker.network:
-    description: The name of the network that the redis broker runs on.
+    description: "The name of the network that the redis broker runs on."
+  redis.broker.host_name:
+    default: ""
+    description: "The DNS host name to be used so that the redis instances can be reached regardless of which site is active."
   redis.broker.firewall_allow_rules:
     default: []
-    description: IPs of hosts in each DC that need to be added to the container firewall rules to allow access to/from.
+    description: "IPs of hosts in each DC that need to be added to the container firewall rules to allow access to/from."
+
 
   cf.apps_domain:
     description: Domain shared by the UAA and CF API eg 'bosh-lite.com'
