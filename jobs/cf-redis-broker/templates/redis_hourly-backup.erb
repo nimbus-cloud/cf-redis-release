@@ -4,8 +4,8 @@ BACKUP_DIR=/var/vcap/servcices_backup/backups/cf-redis
 TIME=`/bin/date +"%Y-%m-%d-%H"`
 Mountpoint=/var/vcap/services_backup
 
-nfs_server=<%= p("cf-redis-broker.nfs_server") %>
-nfs_directory=<%= p("cf-redis-broker.nfs_directory") %>
+nfs_server=<%= p("redis.broker.nfs_server") %>
+nfs_directory=<%= p("redis.broker.nfs_directory") %>
 
 /bin/mkdir -p ${Mountpoint}
 
