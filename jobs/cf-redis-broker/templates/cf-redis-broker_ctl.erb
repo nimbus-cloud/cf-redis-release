@@ -42,7 +42,7 @@ case $1 in
       if crontab -u vcap -l
       then
              #(crontab -u vcap -l; echo "0 0 * * * PATH="'$PATH:/var/vcap/packages/aws-cli/bin'" ${BIN_DIR}/backup --config ${JOB_DIR}/config/backup.yml") | crontab -u vcap -
-             (crontab -u vcap -l | cat /var/vcap/jobs/cf-redis-broker/config/backup.cron) | sed /^$/d | crontab -u vcap -
+             crontab -u vcap -l | cat /var/vcap/jobs/cf-redis-broker/config/backup.cron | sed /^$/d | crontab -u vcap -
       else
              echo "5 * * * * /var/vcap/jobs/cf-redis-broker/bin/redis_hourly-backup 2>&1" | crontab -u vcap -
       fi
