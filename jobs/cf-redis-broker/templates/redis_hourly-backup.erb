@@ -22,5 +22,5 @@ for a in `/bin/ls -l /var/vcap/store/cf-redis-broker/redis-data/ | /bin/grep ^d 
         /bin/cp -p /var/vcap/store/cf-redis-broker/redis-data/${a}/db/dump.rdb ${BACKUP_DIR}/${a}/${TIME}/
         /bin/cp -p /var/vcap/store/cf-redis-broker/redis-data/${a}/redis.conf ${BACKUP_DIR}/${a}/${TIME}/
 
-        /usr/bin/find ${BACKUP_DIR}/${a} -type f -mtime + 14 -delete
+        /usr/bin/find ${BACKUP_DIR}/${a} -type f -mtime +14 -delete
     done
