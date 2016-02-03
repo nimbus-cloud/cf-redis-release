@@ -14,7 +14,7 @@ templates:
   redis.conf.erb: config/redis.conf
   registrar_settings.yml.erb: config/registrar_settings.yml
   backup.cron.erb: config/backup.cron
-  redis_hourly-backup.erb: config/redis_hourly-backup
+  redis_hourly-backup.erb: bin/redis_hourly-backup
 
   drain.sh: bin/drain
 
