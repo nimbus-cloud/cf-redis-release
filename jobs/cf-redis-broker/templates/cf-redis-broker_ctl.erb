@@ -35,7 +35,7 @@ case $1 in
       crontab -l | grep -v $BIN_DIR | crontab -
     fi
     # Add new entry to vcap crontab if not already present
-    if ! crontab -u vcap -l | grep --quiet $BIN_DIR
+    if ! crontab -u vcap -l | grep --quiet $JOB_DIR
     then
       # WARNING: If you change this, you'll need to reconsider the check above,
       # as the current implementation won't update existing crontab entries.
