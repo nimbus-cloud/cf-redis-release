@@ -217,7 +217,7 @@ properties:
 
   redis.broker.backups.enable:
     default: false
-  redis.broker.backups.nfs_server:
+  redis.broker.nfs_server:
     description: NFS server address to use for backup
-  redis.broker.backups.nfs_directory:
+  redis.broker.nfs_directory:
     description: NFS server export dir for backups
