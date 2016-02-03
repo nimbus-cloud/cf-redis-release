@@ -28,7 +28,7 @@ case $1 in
     mkdir -p $RUN_DIR $LOG_DIR $DATA_DIR $INSTANCE_LOG_DIR $STATEFILE_DIR $BACKUP_LOG_DIR $BACKUP_TMP_DIR
     chown vcap:vcap $RUN_DIR $LOG_DIR $DATA_DIR $INSTANCE_LOG_DIR $STATEFILE_DIR $BACKUP_LOG_DIR $BACKUP_TMP_DIR
 
-    # Run backups at midnight, every night
+    # Run backups hourly.
     # Remove any backup entry from root's crontab, we used to add it to the root crontab on the broker in older versions
     if crontab -l | grep --quiet $BIN_DIR
     then
@@ -41,9 +41,10 @@ case $1 in
       # as the current implementation won't update existing crontab entries.
       if crontab -u vcap -l
       then
-             (crontab -u vcap -l; echo "0 0 * * * PATH="'$PATH:/var/vcap/packages/aws-cli/bin'" ${BIN_DIR}/backup --config ${JOB_DIR}/config/backup.yml") | crontab -u vcap -
+             #(crontab -u vcap -l; echo "0 0 * * * PATH="'$PATH:/var/vcap/packages/aws-cli/bin'" ${BIN_DIR}/backup --config ${JOB_DIR}/config/backup.yml") | crontab -u vcap -
+             (crontab -u vcap -l | cat /var/vcap/jobs/cf-redis-broker/config/backup.cron) | sed /^$/d | crontab
       else
-             echo "0 0 * * * PATH="'$PATH:/var/vcap/packages/aws-cli/bin'" ${BIN_DIR}/backup --config ${JOB_DIR}/config/backup.yml" | crontab -u vcap -
+             echo "5 * * * * /var/vcap/jobs/cf-redis-broker/bin/redis_hourly-backup 2>&1" | crontab -u vcap -
       fi
     fi
 
