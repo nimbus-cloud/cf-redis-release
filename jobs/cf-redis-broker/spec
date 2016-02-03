@@ -13,6 +13,8 @@ templates:
   nginx.conf.erb: config/nginx.conf
   redis.conf.erb: config/redis.conf
   registrar_settings.yml.erb: config/registrar_settings.yml
+  backup.cron.erb: config/backup.cron
+  redis_hourly-backup.erb: config/redis_hourly-backup
 
   drain.sh: bin/drain
 
@@ -212,3 +214,10 @@ properties:
     description: The user to use when authenticating with NATS
   cf.nats.password:
     description: The password to use when authenticating with NATS
+
+  redis.broker.backups.enable:
+    default: false
+  redis.broker.backups.nfs_server:
+    description: NFS server address to use for backup
+  redis.broker.backups.nfs_directory:
+    description: NFS server export dir for backups
