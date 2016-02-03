@@ -30,21 +30,21 @@ case $1 in
 
     # Run backups hourly.
     # Remove any backup entry from root's crontab, we used to add it to the root crontab on the broker in older versions
-    if crontab -l | grep --quiet $BIN_DIR
-    then
-      crontab -l | grep -v $BIN_DIR | crontab -
-    fi
-    # Add new entry to vcap crontab if not already present
-    if ! crontab -u vcap -l | grep --quiet $JOB_DIR
+    #if crontab -l | grep --quiet $BIN_DIR
+    #then
+    #  crontab -l | grep -v $BIN_DIR | crontab -
+    #fi
+    # Add new entry to roots crontab if not already present
+    if ! crontab -l | grep --quiet $JOB_DIR
     then
       # WARNING: If you change this, you'll need to reconsider the check above,
       # as the current implementation won't update existing crontab entries.
-      if crontab -u vcap -l
+      if crontab -l
       then
              #(crontab -u vcap -l; echo "0 0 * * * PATH="'$PATH:/var/vcap/packages/aws-cli/bin'" ${BIN_DIR}/backup --config ${JOB_DIR}/config/backup.yml") | crontab -u vcap -
-             crontab -u vcap -l | cat /var/vcap/jobs/cf-redis-broker/config/backup.cron | sed /^$/d | crontab -u vcap -
+             crontab -l | cat /var/vcap/jobs/cf-redis-broker/config/backup.cron | sed /^$/d | crontab -
       else
-             echo "5 * * * * /var/vcap/jobs/cf-redis-broker/bin/redis_hourly-backup 2>&1" | crontab -u vcap -
+             (crontab -l ; echo "5 * * * * /var/vcap/jobs/cf-redis-broker/bin/redis_hourly-backup 2>&1") | crontab -
       fi
     fi
 
