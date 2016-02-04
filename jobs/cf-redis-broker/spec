@@ -215,6 +215,8 @@ properties:
   cf.nats.password:
     description: The password to use when authenticating with NATS
 
+# Backing up to NFS Share
+
   redis.broker.backups.enable:
     default: false
   redis.broker.nfs_server:
