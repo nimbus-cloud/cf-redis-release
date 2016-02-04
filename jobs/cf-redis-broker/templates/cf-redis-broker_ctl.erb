@@ -31,7 +31,7 @@ case $1 in
 
     # Run hourly backups from roots crontab as NFS mount is only writeable by root
     #
-    if crontab -l | grep --quiet $BACKUP_FILE
+    if ! crontab -l | grep --quiet $BACKUP_FILE
     then
       crontab -l > /root/newcron
       cat /var/vcap/jobs/cf-redis-broker/config/backup.cron | sed /^$/d >> /root/newcron
