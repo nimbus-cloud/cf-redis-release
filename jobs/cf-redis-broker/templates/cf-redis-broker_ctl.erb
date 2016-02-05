@@ -50,6 +50,26 @@ case $1 in
       fi
     fi
 
+    # Redis warns about using Transparent Huge Pages which can cause latency
+    # To disable it do the following
+    echo never > /sys/kernel/mm/transparent_hugepage/enabled
+    if ! grep transparent_hugepage /etc/rc.local
+    then
+      cp -p /etc/rc.local /etc/rc.local.bak
+      awk '
+      /exit 0/ {
+        print "if test -f /sys/kernel/mm/transparent_hugepage/enabled; then"
+        print "  echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+        print "fi\n"
+      }
+      { print }
+      ' /etc/rc.local > /root/rc.local
+
+      cp /root/rc.local /etc/rc.local
+      chown root:root /etc/rc.local
+      chmod 755 /etc/rc.local
+    fi
+
     # Recommended for running redis on a VM in production (https://www.pivotaltracker.com/story/show/74949514)
     sysctl vm.overcommit_memory=1
 
