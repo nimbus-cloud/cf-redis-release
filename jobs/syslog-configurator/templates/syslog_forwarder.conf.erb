@@ -33,6 +33,9 @@ template(name="CfLogTemplate" type="list") {
         property(name="msg")
 }
 
+# discard spam heartbeat from process-monitor
+:msg, contains, "process-monitor.redis instance already running" stop
+
 <% if_p("syslog_aggregator.address", "syslog_aggregator.port", "syslog_aggregator.transport") do |address, port, transport| %>
 
 <% if transport == "relp" %>

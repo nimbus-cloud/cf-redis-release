@@ -11,11 +11,16 @@ properties:
   cf.api_url:
     description: 'Full URL of Cloud Foundry API'
   cf.apps_domain:
-    description: 'App domain for Cloud Foundry'
+    description: Domain used by `cf push`ed apps
+  cf.system_domain:
+    description: Domain shared by the UAA and CF API eg 'bosh-lite.com'
   cf.admin_username:
     description: 'Username of the admin user'
   cf.admin_password:
     description: 'Password of the admin user'
+  cf.skip_ssl_validation:
+    description: 'Skip SSL certificate validation'
+    default: true
   redis.broker.service_name:
     description: Service name displayed in the catalog metadata
     default: p-redis

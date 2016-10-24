@@ -35,6 +35,9 @@ properties:
   redis.log_directory:
     default: /var/vcap/sys/log/redis
     description: The directory which stores the redis server logs
+  redis.pidfile_directory:
+    default: /var/vcap/sys/run/shared-instance-pidfiles
+    description: The directory in which we store shared instance pid files
   redis.conf_path:
     default: /var/vcap/jobs/cf-redis-broker/config/redis.conf
     description: The shared conf file for all Redis instances
@@ -203,6 +206,8 @@ properties:
 
 
   cf.apps_domain:
+    description: Domain used by `cf push`ed apps
+  cf.system_domain:
     description: Domain shared by the UAA and CF API eg 'bosh-lite.com'
   cf.nats.host:
     description: Hostname/IP of NATS
@@ -212,3 +217,8 @@ properties:
     description: The user to use when authenticating with NATS
   cf.nats.password:
     description: The password to use when authenticating with NATS
+
+  syslog_aggregator.address:
+    description: The address of the syslog aggregator
+  syslog_aggregator.port:
+    description: The port to connect to the syslog aggregator over

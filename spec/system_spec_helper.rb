@@ -1,6 +1,10 @@
 require 'helpers/environment'
+require 'helpers/utilities'
 require 'prof/external_spec/spec_helper'
 require 'prof/matchers/only_support_ssl_with_cipher_set'
+require 'yaml'
+require 'aws-sdk'
+require 'logger'
 
 ROOT = File.expand_path('..', __dir__)
 
@@ -38,6 +42,31 @@ module Helpers
   end
 end
 
+module ExcludeHelper
+  def self.manifest
+    @bosh_manifest ||= YAML.load(File.read(ENV['BOSH_MANIFEST']))
+  end
+
+  def self.run_backup_spec?
+    manifest
+      .fetch('properties')
+      .fetch('redis')
+      .fetch('broker').has_key?('backups')
+  end
+
+  def self.warnings
+    message = "\n"
+
+    if !run_backup_spec?
+      message += "WARNING: Skipping backup tests, backups are not available in this manifest\n"
+    end
+
+    message + "\n"
+  end
+end
+
+puts ExcludeHelper::warnings
+
 RSpec.configure do |config|
   config.include Helpers::Environment
   config.include Prof::Matchers
@@ -45,8 +74,17 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.order = 'random'
   config.full_backtrace = true
+  config.filter_run_excluding :skip_backup_spec => !ExcludeHelper::run_backup_spec?
 
   config.before(:all) do
     redis_service_broker.deprovision_service_instances!
+
+    Aws.config.update({
+        region: 'us-east-1',
+        credentials: Aws::Credentials.new(
+           bosh_manifest.property('redis.broker.backups.access_key_id'),
+           bosh_manifest.property('redis.broker.backups.secret_access_key')
+        )
+    })
   end
 end
