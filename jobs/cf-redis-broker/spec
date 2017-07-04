@@ -207,6 +207,13 @@ properties:
     default: 0
     description: Interval in seconds between consistency checks. If this option is set to zero, consistency checks are not being performed.
 
+  redis.broker.host_name:
+    default: ""
+    description: "The DNS host name to be used so that the redis instances can be reached regardless of which site is active."
+  redis.broker.firewall_allow_rules:
+    default: []
+    description: "IPs of hosts in each DC that need to be added to the container firewall rules to allow access to/from."
+
   cf.apps_domain:
     description: Domain used by `cf push`ed apps
   cf.system_domain:
