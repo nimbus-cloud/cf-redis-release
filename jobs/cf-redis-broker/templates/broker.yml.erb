@@ -27,6 +27,7 @@ redis:
   firewall_allow_rules: <%= p('redis.broker.firewall_allow_rules') %>
   master: <%= p('redis.broker.master') %>
   other_side_ip: <%= p('redis.broker.other_side_ip') %>
+  broker_nginx_port: <%= p('redis.broker.nginx.port') %>
 
 auth:
   username: <%= p('redis.broker.auth.username') %>
