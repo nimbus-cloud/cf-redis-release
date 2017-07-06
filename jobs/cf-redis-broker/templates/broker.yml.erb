@@ -25,6 +25,9 @@ redis:
     statefile_path: <%= p('redis.statefile_path') %>
   host_name: <%= p('redis.broker.host_name') %>
   firewall_allow_rules: <%= p('redis.broker.firewall_allow_rules') %>
+  master: <%= p('redis.broker.master') %>
+  slave_of: <%= p('redis.broker.slave_of') %>
+  other_side_ip: <%= p('redis.broker.other_side_ip') %>
 
 auth:
   username: <%= p('redis.broker.auth.username') %>

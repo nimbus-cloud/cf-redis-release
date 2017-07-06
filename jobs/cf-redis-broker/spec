@@ -213,6 +213,15 @@ properties:
   redis.broker.firewall_allow_rules:
     default: []
     description: "IPs of hosts in each DC that need to be added to the container firewall rules to allow access to/from."
+  redis.broker.master:
+    default: true
+    description: "Whether or not a given node is master. Needed for master/slave replication."
+  redis.broker.slave_of:
+    default: ""
+    description: "IP address of master node to replicate from."
+  redis.broker.other_side_ip:
+    default: ""
+    description: "IP address of the other redis node taking part in replication."
 
   cf.apps_domain:
     description: Domain used by `cf push`ed apps
