@@ -216,9 +216,6 @@ properties:
   redis.broker.master:
     default: true
     description: "Whether or not a given node is master. Needed for master/slave replication."
-  redis.broker.slave_of:
-    default: ""
-    description: "IP address of master node to replicate from."
   redis.broker.other_side_ip:
     default: ""
     description: "IP address of the other redis node taking part in replication."
