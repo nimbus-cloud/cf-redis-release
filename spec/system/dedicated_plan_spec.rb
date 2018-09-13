@@ -1,7 +1,7 @@
 require 'system_spec_helper'
 require 'system/shared_examples/redis_instance'
+require 'system/shared_examples/service'
 
-require 'prof/external_spec/shared_examples/service'
 require 'prof/marketplace_service'
 require 'prof/service_instance'
 
@@ -17,24 +17,7 @@ describe 'dedicated plan' do
 
   let(:redis_config_command) { bosh_manifest.property('redis.config_command') }
 
-  # defining manually_drain skips duplicate shared_example within prof
-  let(:manually_drain) { '' }
   it_behaves_like 'a persistent cloud foundry service'
-
-  it 'preserves data when recreating vms' do
-    service_broker.provision_and_bind(service.name, service.plan) do |service_binding|
-      service_client = service_client_builder(service_binding)
-      service_client.write('test_key', 'test_value')
-      expect(service_client.read('test_key')).to eq('test_value')
-
-      bosh_director.stop(environment.bosh_service_broker_job_name, 0)
-      host = bosh_director.ips_for_job(environment.bosh_service_broker_job_name, bosh_manifest.deployment_name).first
-
-      bosh_director.recreate_all([environment.bosh_service_broker_job_name])
-
-      expect(service_client.read('test_key')).to eq('test_value')
-    end
-  end
 
   let(:admin_command_availability) do
     {
@@ -78,7 +61,7 @@ describe 'dedicated plan' do
 
       it 'runs correct version of redis' do
         client = service_client_builder(@binding)
-        expect(client.info('redis_version')).to eq('3.2.8')
+        expect(client.info('redis_version')).to eq('4.0.11')
       end
 
       it 'requires a password' do
@@ -91,7 +74,7 @@ describe 'dedicated plan' do
     end
 
     it 'logs instance provisioning' do
-      vm_log = broker_ssh.execute('sudo cat /var/log/syslog')
+      vm_log = broker_ssh.execute('sudo cat /var/vcap/sys/log/cf-redis-broker/cf-redis-broker.stdout.log')
       contains_expected_log = drop_log_lines_before(@preprovision_timestamp, vm_log).any? do |line|
         line.include?('Successfully provisioned Redis instance') &&
         line.include?('dedicated-vm') &&
@@ -110,7 +93,7 @@ describe 'dedicated plan' do
     end
 
     it 'logs instance deprovisioning' do
-      vm_log = broker_ssh.execute('sudo cat /var/log/syslog')
+      vm_log = broker_ssh.execute('sudo cat /var/vcap/sys/log/cf-redis-broker/cf-redis-broker.stdout.log')
       contains_expected_log = drop_log_lines_before(@predeprovision_timestamp, vm_log).any? do |line|
         line.include?('Successfully deprovisioned Redis instance') &&
         line.include?('dedicated-vm') &&
@@ -133,7 +116,8 @@ describe 'dedicated plan' do
       # Restart dedicated node
       dedicated_node_index = bosh_director.ips_for_job(Helpers::Environment::DEDICATED_NODE_JOB_NAME, bosh_manifest.deployment_name).index(service_instance_host)
       expect(dedicated_node_index).to_not be_nil
-      bosh_director.recreate_instance(Helpers::Environment::DEDICATED_NODE_JOB_NAME, dedicated_node_index)
+
+      Helpers::BOSH::Deployment.new(bosh_manifest.deployment_name).execute(%W(recreate -n #{Helpers::Environment::DEDICATED_NODE_JOB_NAME}/#{dedicated_node_index}))
 
       # Ensure data is intact
       expect(client.read('test_key')).to eq('test_value')
@@ -153,7 +137,7 @@ describe 'dedicated plan' do
         expect(@old_client.read('test_key')).to eq('test_value')
 
         host = service_binding.credentials[:host]
-        _, instance_id = Helpers::BOSH::Instances.new(bosh_manifest.deployment_name).instance(host)
+        _, instance_id = Helpers::BOSH::Deployment.new(bosh_manifest.deployment_name).instance(host)
         @node_ssh = Helpers::BOSH::SSH.new(bosh_manifest.deployment_name, Helpers::Environment::DEDICATED_NODE_JOB_NAME, instance_id)
 
         aof_contents = @node_ssh.execute('sudo cat /var/vcap/store/redis/appendonly.aof')
@@ -236,6 +220,6 @@ describe 'dedicated plan' do
 end
 
 def allocate_all_instances!
-  max_instances = bosh_manifest.property('redis.broker.dedicated_nodes').length
+  max_instances = bosh_manifest.job(Helpers::Environment::DEDICATED_NODE_JOB_NAME).instances
   max_instances.times.map { service_broker.provision_instance(service.name, service.plan) }
 end

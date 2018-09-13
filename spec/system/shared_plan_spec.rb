@@ -1,8 +1,8 @@
 require 'system_spec_helper'
 require 'support/redis_service_client'
 require 'system/shared_examples/redis_instance'
+require 'system/shared_examples/service'
 
-require 'prof/external_spec/shared_examples/service'
 require 'prof/marketplace_service'
 
 describe 'shared plan' do
@@ -20,9 +20,6 @@ describe 'shared plan' do
     ).first
   end
 
-  # TODO do not manually run drain once bosh bug fixed
-  let(:manually_drain) { '/var/vcap/jobs/cf-redis-broker/bin/drain' }
-
   describe 'redis provisioning' do
     before(:all) do
       @preprovision_timestamp = broker_ssh.execute('date +%s')
@@ -34,7 +31,7 @@ describe 'shared plan' do
     end
 
     it 'logs instance provisioning' do
-      vm_log = broker_ssh.execute('sudo cat /var/log/syslog')
+      vm_log = broker_ssh.execute('sudo cat /var/vcap/sys/log/cf-redis-broker/cf-redis-broker.stdout.log')
       contains_expected_log = drop_log_lines_before(@preprovision_timestamp, vm_log).any? do |line|
         line.include?('Successfully provisioned Redis instance') &&
         line.include?('shared-vm') &&
@@ -54,7 +51,7 @@ describe 'shared plan' do
     end
 
     it 'logs instance deprovisioning' do
-      vm_log = broker_ssh.execute('sudo cat /var/log/syslog')
+      vm_log = broker_ssh.execute('sudo cat /var/vcap/sys/log/cf-redis-broker/cf-redis-broker.stdout.log')
       contains_expected_log = drop_log_lines_before(@predeprovision_timestamp, vm_log).any? do |line|
         line.include?('Successfully deprovisioned Redis instance') &&
         line.include?('shared-vm') &&
@@ -88,7 +85,7 @@ describe 'shared plan' do
     end
   end
 
-  context 'when stopping the broker vm' do
+  context 'when stopping the broker vm'  do
     before(:all) do
       @prestop_timestamp = broker_ssh.execute("date +%s")
       bosh_director.stop(environment.bosh_service_broker_job_name, 0)
@@ -130,7 +127,7 @@ describe 'shared plan' do
 
       it 'runs correct version of redis' do
         service_client = service_client_builder(@service_binding)
-        expect(service_client.info('redis_version')).to eq('3.2.8')
+        expect(service_client.info('redis_version')).to eq('4.0.11')
       end
     end
 

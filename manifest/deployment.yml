@@ -32,77 +32,45 @@ instance_groups:
     release: routing
     consumes:
       nats: {from: nats, deployment: "((cf_deployment_name))"}
-  - name: syslog-configurator
+  - name: bpm
+    release: bpm
+  - name: syslog_forwarder
+    release: syslog
+    properties: &syslog-configuration
+      syslog:
+        address: ((syslog_endpoint_host))
+        port: ((syslog_endpoint_port))
+        transport: tcp
+  - name: broker-registrar
     release: cf-redis
-- instances: 3
+  - name: broker-deregistrar
+    release: cf-redis
+  - name: smoke-tests
+    release: cf-redis
+  - name: deprecate-dedicated-vm-plan
+    release: cf-redis
+  - name: cleanup-metadata-if-dedicated-disabled
+    release: cf-redis
+
+- instances: ((dedicated_node_count))
   name: dedicated-node
   azs: [((default_az))]
   vm_type: ((default_vm_type))
   networks:
   - name: ((default_network))
-    static_ips: ((dedicated_nodes_ips))
   persistent_disk_type: ((default_persistent_disk_type))
   stemcell: default
   jobs:
   - name: dedicated-node
     release: cf-redis
-  - name: syslog-configurator
-    release: cf-redis
-- instances: 1
-  name: broker-registrar
-  azs: [((default_az))]
-  vm_type: ((default_vm_type))
-  stemcell: default
-  lifecycle: errand
-  networks:
-  - name: ((default_network))
-  properties:
-    broker:
-      host: ((broker_name)).((system_domain))
-      name: redis
-      username: ((broker_username))
-      password: ((broker_password))
-  jobs:
-  - name: broker-registrar
-    release: cf-redis
-- instances: 1
-  lifecycle: errand
-  name: broker-deregistrar
-  azs: [((default_az))]
-  vm_type: ((default_vm_type))
-  stemcell: default
-  networks:
-  - name: ((default_network))
-  properties:
-    broker:
-      host: ((broker_name)).((system_domain))
-      name: redis
-      password: ((broker_password))
-      username: ((broker_username))
-  jobs:
-  - name: broker-deregistrar
-    release: cf-redis
-- instances: 1
-  lifecycle: errand
-  name: smoke-tests
-  azs: [((default_az))]
-  vm_type: ((default_vm_type))
-  stemcell: default
-  networks:
-  - name: ((default_network))
-  properties:
-    retry:
-      backoff: linear
-      baseline_interval_milliseconds: 1000
-      max_attempts: 10
-  jobs:
-  - name: smoke-tests
-    release: cf-redis
+  - name: syslog_forwarder
+    release: syslog
+    properties: *syslog-configuration
 
 properties:
   broker:
     host: ((broker_name)).((system_domain))
-    name: redis
+    name: ((broker_name))
     password: ((broker_password))
     username: ((broker_username))
   cf:
@@ -120,29 +88,34 @@ properties:
         password: ((broker_password))
         username: ((broker_username))
       backend_port: 12345
-      dedicated_nodes: ((dedicated_nodes_ips))
       dedicated_vm_plan_id: ((dedicated_vm_plan_id))
       enable_service_access: true
-      name: redis
+      name: ((broker_name))
       network: ((default_network))
       route_name: ((broker_name))
       service_id: ((service_id))
       service_instance_limit: 5
-      service_name: p-redis
+      dedicated_node_count: ((dedicated_node_count))
+      service_name: ((service_name))
       shared_vm_plan_id: ((shared_vm_plan_id))
       subdomain: ((broker_name))
     config_command: configalias
     maxmemory: 262144000
     save_command: anotherrandomstring
-  syslog_aggregator:
-    address: 127.0.0.1
-    port: 1234
+  retry:
+    backoff: linear
+    baseline_interval_milliseconds: 1000
+    max_attempts: 10
 
 releases:
 - name: cf-redis
   version: latest
 - name: routing
-  version: 0.157.0
+  version: ((routing_version))
+- name: bpm
+  version: ((bpm_version))
+- name: syslog
+  version: ((syslog_version))
 
 stemcells:
 - alias: default

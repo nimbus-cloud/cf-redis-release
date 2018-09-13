@@ -3,6 +3,7 @@ require 'prof/environment/cloud_foundry'
 require 'support/redis_service_broker'
 require 'support/redis_service_client_builder'
 require 'helpers/bosh_cli_wrapper'
+require 'helpers/utilities'
 
 class FilteredStderr < StringIO
   def write value
@@ -20,7 +21,8 @@ end
 
 module Helpers
   module Environment
-    fail "Must specify BOSH_MANIFEST environment variable" unless ENV.key?('BOSH_MANIFEST')
+    fail 'Must specify BOSH_MANIFEST environment variable' unless ENV.key?('BOSH_MANIFEST')
+    fail 'Must specify SYSLOG_TEST_ENDPOINT environment variable' unless ENV.key?('SYSLOG_TEST_ENDPOINT')
 
     BROKER_JOB_NAME = 'cf-redis-broker'
     DEDICATED_NODE_JOB_NAME = 'dedicated-node'
@@ -43,16 +45,22 @@ module Helpers
           options[:ssh_gateway_password] = 'c1oudc0w'
         end
 
-        if ENV.key?('JUMPBOX_HOST')
-          options[:ssh_gateway_host]        = parse_host(ENV['JUMPBOX_HOST'])
-          options[:ssh_gateway_username]    = ENV.fetch('JUMPBOX_USERNAME')
-          options[:ssh_gateway_password]    = ENV['JUMPBOX_PASSWORD']         if ENV.key?('JUMPBOX_PASSWORD')
-          options[:ssh_gateway_private_key] = ENV['JUMPBOX_PRIVATE_KEY_PATH'] if ENV.key?('JUMPBOX_PRIVATE_KEY_PATH')
-        end
+        options.merge! get_jumpbox_gateway_options
 
         options[:use_proxy] = ENV['USE_PROXY'] == 'true'
         Prof::Environment::CloudFoundry.new(options)
       end
+    end
+
+    def get_jumpbox_gateway_options
+      options = {}
+      if ENV.key?('JUMPBOX_HOST')
+        options[:ssh_gateway_host]        = parse_host(ENV['JUMPBOX_HOST'])
+        options[:ssh_gateway_username]    = ENV.fetch('JUMPBOX_USERNAME')
+        options[:ssh_gateway_password]    = ENV['JUMPBOX_PASSWORD']         if ENV.key?('JUMPBOX_PASSWORD')
+        options[:ssh_gateway_private_key] = ENV['JUMPBOX_PRIVATE_KEY_PATH'] if ENV.key?('JUMPBOX_PRIVATE_KEY_PATH')
+      end
+      options
     end
 
     def redis_service_broker
@@ -80,8 +88,14 @@ module Helpers
     end
 
     def instance_ssh(host_ip)
-      instance_group, instance_id = BOSH::Instances.new(bosh_manifest.deployment_name).instance(host_ip)
+      instance_group, instance_id = BOSH::Deployment.new(bosh_manifest.deployment_name).instance(host_ip)
       BOSH::SSH.new(bosh_manifest.deployment_name, instance_group, instance_id)
+    end
+
+    def get_syslog_endpoint_helper
+      syslog_endpoint = URI.parse(ENV.fetch('SYSLOG_TEST_ENDPOINT'))
+      gateway_executor = Utilities::GatewayExecutor.new(syslog_endpoint.host, syslog_endpoint.port, get_jumpbox_gateway_options)
+      Utilities::SyslogEndpointHelper.new(syslog_endpoint.host, syslog_endpoint.port, gateway_executor)
     end
 
     # net-ssh makes a deprecated call to `timeout`. We ignore these messages
@@ -113,14 +127,6 @@ module Helpers
       gateway
     end
 
-    def broker_host
-      bosh_manifest.job(BROKER_JOB_NAME).static_ips.first
-    end
-
-    def node_hosts
-      bosh_manifest.job(DEDICATED_NODE_JOB_NAME).static_ips
-    end
-
     def broker_backend_port
       bosh_manifest.property('redis').fetch('broker').fetch('backend_port')
     end
@@ -135,16 +141,6 @@ module Helpers
         save_command:   bosh_manifest.property('redis.save_command'),
         config_command: bosh_manifest.property('redis.config_command')
       ).build(binding)
-    end
-
-    def root_execute_on(ip, command)
-      root_prompt = '[sudo] password for vcap: '
-      root_prompt_length = root_prompt.length
-
-      output = ssh_gateway.execute_on(ip, command, root: true)
-      expect(output).not_to be_nil
-      expect(output).to start_with(root_prompt)
-      return output.slice(root_prompt_length, output.length - root_prompt_length)
     end
 
     private

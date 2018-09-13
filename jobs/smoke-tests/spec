@@ -5,18 +5,26 @@ templates:
   errand.sh.erb: bin/run
 
 packages:
-- go
+- golang-1.10-linux
 - ginkgo
 - cf-redis-smoke-tests
-- cf-cli
+- cf-cli-6-linux
 
 consumes:
 - name: redis_broker
   type: redis_broker
+- name: dedicated_node
+  type: dedicated_node
 
 properties:
   cf.api_url:
     description: 'Full URL of Cloud Foundry API'
+  cf.org_name:
+    description: Org to be used from the smoke-tests
+    default: system
+  cf.space_name:
+    description: Space to be used from the smoke-tests
+    default: pivotal-services
   cf.apps_domain:
     description: Domain used by `cf push`ed apps
   cf.system_domain:
@@ -31,6 +39,8 @@ properties:
   redis.broker.service_name:
     description: Service name displayed in the catalog metadata
     default: p-redis
+  redis.broker.dedicated_node_count:
+    description: Number of provisioned dedicated instances
   redis.broker.service_instance_limit:
     description: The maximum number of instances allowed
   redis.broker.dedicated_nodes:

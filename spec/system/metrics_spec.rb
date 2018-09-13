@@ -3,7 +3,7 @@ require 'system_spec_helper'
 describe 'metrics', :skip_metrics => true do
 
   before do
-    @number_of_nodes = bosh_manifest.job(Helpers::Environment::DEDICATED_NODE_JOB_NAME).static_ips.count
+    @number_of_nodes = bosh_manifest.job(Helpers::Environment::DEDICATED_NODE_JOB_NAME).instances
     @origin_tag = bosh_manifest.property('service_metrics.origin')
     @outFile = Tempfile.new('smetrics')
     @pid = spawn(
@@ -43,6 +43,7 @@ describe 'metrics', :skip_metrics => true do
      "/p-redis/info/stats/evicted_keys",
      "/p-redis/info/server/uptime_in_seconds",
      "/p-redis/info/server/uptime_in_days",
+     "/p-redis/info/persistence/rdb_last_bgsave_status",
     ].each do |metric_name|
       it "contains #{metric_name} metric for all dedicated nodes" do
         @number_of_nodes.times do |idx|
@@ -57,7 +58,7 @@ describe 'metrics', :skip_metrics => true do
 
     expect(metric).to match(/value:\d/)
     expect(metric).to include("origin:\"#{@origin_tag}\"")
-    expect(metric).to include('deployment:"cf-redis"')
+    expect(metric).to include(%Q{deployment:"#{bosh_manifest.deployment_name}"})
     expect(metric).to include('eventType:ValueMetric')
     expect(metric).to match(/timestamp:\d/)
     expect(metric).to match(/index:"[\dabcdef-]*"/)
@@ -65,7 +66,7 @@ describe 'metrics', :skip_metrics => true do
   end
 
   def find_metric(metric_name, job_name, job_index)
-    job_id = metron_id_from_job_index(job_name, job_index)
+    job_id = loggregator_agent_id_from_job_index(job_name, job_index)
     60.times do
       File.open(firehose_out_file, "r") do |file|
         regex = /(?=.*job:"#{job_name}")(?=.*index:"#{job_id}")(?=.*name:"#{metric_name}")/
@@ -79,11 +80,10 @@ describe 'metrics', :skip_metrics => true do
     fail("metric '#{metric_name}' for job '#{job_name}' with index '#{job_id}' not found")
   end
 
-  def metron_id_from_job_index(job_name, job_index)
+  def loggregator_agent_id_from_job_index(job_name, job_index)
     job_ssh = Helpers::BOSH::SSH.new(bosh_manifest.deployment_name, job_name, job_index)
 
-    metron_agent_config = job_ssh.execute('sudo cat /var/vcap/jobs/metron_agent/config/metron_agent.json')
-    JSON.parse(metron_agent_config).fetch("Index")
+    job_ssh.execute('sudo cat /var/vcap/jobs/loggregator_agent/bin/environment.sh | grep AGENT_INDEX | cut -d \" -f2')
   end
 
   def firehose_out_file

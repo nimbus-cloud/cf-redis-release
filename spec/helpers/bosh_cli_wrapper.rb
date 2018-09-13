@@ -8,13 +8,14 @@ module Helpers
       private
 
       def base_cmd(deployment)
+        bosh_cmd = ENV.fetch('BOSH_V2_CLI', 'bosh')
         environment = ENV.fetch('BOSH_ENVIRONMENT')
         ca_cert = ENV.fetch('BOSH_CA_CERT_PATH')
         client = ENV.fetch('BOSH_CLIENT')
         client_secret = ENV.fetch('BOSH_CLIENT_SECRET')
 
         [
-          "bosh-go-cli",
+          bosh_cmd,
           "--environment #{environment}",
           "--ca-cert #{ca_cert}",
           "--client #{client}",
@@ -25,7 +26,7 @@ module Helpers
       end
     end
 
-    class Instances
+    class Deployment
       include BaseCommand
 
       def initialize(deployment)
@@ -35,16 +36,33 @@ module Helpers
       def instance(host)
         cmd = base_cmd(@deployment).push("instances").join(' ')
 
-        stdout, _, _ = Open3.capture3(cmd)
+        stdout, stderr, status = Open3.capture3(cmd)
+
+        unless status.success?
+          puts stderr
+          raise "command failed: #{cmd}"
+        end
 
         result = JSON.parse(stdout)
         table = result.fetch('Tables').first
         rows = table.fetch('Rows')
-        match = rows.find { |row| row.last == host }
+        match = rows.find { |row| row.fetch('ips') == host }
         return nil if match.nil?
 
-        instance_group, instance_id = match[0].split("/")
+        instance_group, instance_id = match.fetch('instance').split("/")
         return instance_group, instance_id
+      end
+
+      def execute(args)
+        cmd = base_cmd(@deployment).push(args).join(' ')
+        stdout, stderr, status = Open3.capture3(cmd)
+
+        unless status.success?
+          puts stderr
+          raise "command failed: #{cmd}"
+        end
+
+        JSON.parse(stdout)
       end
     end
 
@@ -114,7 +132,7 @@ module Helpers
 
       def eventually_contains_shutdown_log(prestop_timestamp)
         12.times do
-          vm_log = execute("sudo cat /var/log/syslog")
+          vm_log = execute("sudo cat /var/vcap/sys/log/cf-redis-broker/cf-redis-broker.stdout.log")
           contains_expected_shutdown_log = drop_log_lines_before(prestop_timestamp, vm_log).any? do |line|
             line.include?('Starting Redis Broker shutdown')
           end
