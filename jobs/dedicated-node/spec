@@ -49,19 +49,19 @@ properties:
     description: Set the number of databases. The default database is DB 0.
 
 ################################ SNAPSHOTTING  #################################
-  redis.snapshotting.save:
+  redis.config.snapshotting.save:
     default:
       - 900 1
       - 300 10
       - 60 10000
     description: save <seconds> <changes>; Will save the DB if both the given number of seconds and the given number of write operations against the DB occurred.
-  redis.snapshotting.stop_writes_on_bgsave_error:
+  redis.config.snapshotting.stop_writes_on_bgsave_error:
     default: 'yes'
     description: This will make the user aware (in an hard way) that data is not persisting on disk properly
-  redis.snapshotting.rdb_compression:
+  redis.config.snapshotting.rdb_compression:
     default: 'yes'
     description: Compress string objects using LZF when dump .rdb databases
-  redis.snapshotting.rdb_checksum:
+  redis.config.snapshotting.rdb_checksum:
     default: 'yes'
     description: RDB files created with checksum disabled have a checksum of zero that will tell the loading code to skip the check.
 
@@ -73,31 +73,48 @@ properties:
 # different interval, or to listen to another port, and so on.
 #
 
-  redis.replication.slave_serve_stale_data:
+  redis.config.replication.slave_serve_stale_data:
     default: 'yes'
     description:  Master-Slave replication. Use slaveof to make a Redis instance a copy of another Redis server.
-  redis.replication.slave_read_only:
+  redis.config.replication.slave_read_only:
     default: 'yes'
     description: Configure a slave instance to accept writes or not.
-  redis.replication.repl_ping_slave_period:
+  redis.config.replication.repl_ping_slave_period:
     default: 10
     description: Configure interval time in seconds that slaves send PINGs to server.
-  redis.replication.repl_timeout:
+  redis.config.replication.repl_timeout:
     default: 60
     description: Sets a timeout for both Bulk transfer I/O timeout and master data or ping response timeout.
-  redis.replication.repl_disable_tcp_nodelay:
+  redis.config.replication.repl_disable_tcp_nodelay:
     default: 'no'
     description: Set TCP_NODELAY on the slave socket after SYNC.
-  redis.replication.slave_priority:
+  redis.config.replication.slave_priority:
     default: 100
     description: The slave priority is an integer number published by Redis in the INFO output. It is used by Redis Sentinel in order to select a slave to promote into a master if the master is no longer working correctly.
 
-  redis.security.require_pass:
+  redis.config.security.require_pass:
     description: Require clients to issue AUTH PASSWORD before processing any other commands.
 
-  redis.lua_time_limit:
+  redis.config.lua_time_limit:
     description: Max execution time of a Lua script in milliseconds.
     default: 5000
+
+################################## LIMITS ##################################
+
+  redis.config.limits.max_memory_policy:
+    default: noeviction
+    description: How Redis will select what to remove when maxmemory is reached.
+
+  redis.config.limits.max_clients:
+    default: 10000
+    description: Set the max number of connected clients at the same time.
+
+
+################################## APPEND ONLY MODE ##################################
+
+  redis.config.append_only_mode:
+    default: yes
+    description: 
 
 
 ################################## SLOW LOG ###################################
@@ -109,17 +126,13 @@ properties:
 # stage of command execution where the thread is blocked and can not serve
 # other requests in the meantime).
 
-  redis.slow_log.log_slower_than:
+  redis.config.slow_log.log_slower_than:
     description: the execution time, in microseconds, to exceed in order for the command to get logged
     default: 10000
 
-  redis.slow_log.max_len:
+  redis.config.slow_log.max_len:
     description: The length of the slow log. There is no limit to this length. Just be aware that it will consume memory. You can reclaim memory used by the slow log with SLOWLOG RESET.
     default: 128
-
-  redis.limits.maxclients:
-    default: 10000
-    description: Set the max number of connected clients at the same time
 
   redis.broker.auth.username:
     default: admin
