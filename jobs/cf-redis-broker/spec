@@ -73,6 +73,12 @@ properties:
     default: 16
     description: Set the number of databases. The default database is DB 0.
 
+
+####### LIMITS #####
+  redis.limits.maxmemory_policy:
+    default: noeviction
+    description: What poilicy to use when memory fills up
+
 ################################ SNAPSHOTTING  #################################
   redis.snapshotting.save:
     default:
