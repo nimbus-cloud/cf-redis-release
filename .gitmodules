@@ -8,3 +8,6 @@
 	path = src/cf-redis-smoke-tests
 	url = git@github.com:nimbus-cloud/cf-redis-smoke-tests.git
 	branch = master
+[submodule "cf-redis-smoke-tests"]
+	path = cf-redis-smoke-tests
+	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
