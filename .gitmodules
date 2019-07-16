@@ -7,13 +7,3 @@
 [submodule "src/cf-redis-smoke-tests"]
 	path = src/cf-redis-smoke-tests
 	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
-	branch = master
-[submodule "cf-redis-smoke-tests"]
-	path = cf-redis-smoke-tests
-	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
-[submodule "src/cf-redis-release"]
-	path = src/cf-redis-release
-	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
-[submodule "src/src/cf-redis-smoke-tests"]
-	path = src/src/cf-redis-smoke-tests
-	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
