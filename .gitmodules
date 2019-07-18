@@ -4,3 +4,6 @@
 [submodule "packages/ruby"]
 	path = packages/ruby
 	url = https://github.com/cloudfoundry/ruby-package.git
+[submodule "src/cf-redis-smoke-tests"]
+	path = src/cf-redis-smoke-tests
+	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
