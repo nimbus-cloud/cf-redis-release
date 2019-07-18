@@ -7,3 +7,5 @@
 [submodule "src/cf-redis-smoke-tests"]
 	path = src/cf-redis-smoke-tests
 	url = https://github.com/nimbus-cloud/cf-redis-smoke-tests.git
+    branch = nimbus-security-group
+    
