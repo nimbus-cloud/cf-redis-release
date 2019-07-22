@@ -320,7 +320,7 @@ slave-priority <%= p('redis.replication.slave_priority') %>
 # limit for maxmemory so that there is some free RAM on the system for slave
 # output buffers (but this is not needed if the policy is 'noeviction').
 #
-maxmemory <%= properties.redis.maxmemory %>
+maxmemory <%= p('properties.redis.maxmemory') %>
 
 # MAXMEMORY POLICY: how Redis will select what to remove when maxmemory
 # is reached. You can select among five behaviors:
@@ -341,7 +341,7 @@ maxmemory <%= properties.redis.maxmemory %>
 #       zunionstore zinterstore hset hsetnx hmset hincrby incrby decrby
 #       getset mset msetnx exec sort
 
-maxmemory-policy noeviction
+maxmemory-policy <%= p('properties.redis.limits.maxmemory_policy') %>
 
 # LRU and minimal TTL algorithms are not precise algorithms but approximated
 # algorithms (in order to save memory), so you can select as well the sample
