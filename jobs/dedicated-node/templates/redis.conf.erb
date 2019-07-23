@@ -398,7 +398,7 @@ requirepass <%= p('redis.security.require_pass') %>
 #       zunionstore zinterstore hset hsetnx hmset hincrby incrby decrby
 #       getset mset msetnx exec sort
 
-maxmemory-policy <%= p('properties.redis.maxmemory_policy') %>
+maxmemory-policy <%= p('redis.maxmemory_policy') %>
 
 # LRU and minimal TTL algorithms are not precise algorithms but approximated
 # algorithms (in order to save memory), so you can select as well the sample
