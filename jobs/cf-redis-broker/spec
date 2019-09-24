@@ -187,7 +187,7 @@ properties:
     description: The name of the network that the redis broker runs on.
 
   redis.broker.description:
-    default: "Redis service to provide a key-value store"
+    default: "Volatile-ttl redis service to provide a key-value store"
     description: Short description displayed in Apps Manager and CF marketplace
   redis.broker.provider_display_name:
     default: "Pivotal"
